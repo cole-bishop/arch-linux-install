@@ -112,9 +112,6 @@ passwd MYUSERNAME
 # Obtain mkinitcpio - will generate /etc/mkinitcpio.conf
 pacman -S mkinitcpio
 
-# Enter shell with mkinitcpio present (or zsh)
-bash
-
 # Configure mkinitcpio with modules needed for the initrd image
 sed -i 's/MODULES=()/MODULES=(i915 ext4)/' /etc/mkinitcpio.conf
 
