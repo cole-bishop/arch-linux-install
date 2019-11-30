@@ -1,0 +1,149 @@
+# Install ARCH Linux with encrypted file-system and UEFI on a blank (all unallocated space) NVME SSD
+# The official installation guide (https://wiki.archlinux.org/index.php/Installation_Guide) contains a more verbose description.
+
+# Download the archiso image from https://www.archlinux.org/
+# Copy to a usb-drive
+dd if=archlinux.img of=/dev/sdX bs=16M && sync # on linux
+
+# Boot from the usb. If the usb fails to boot, make sure that secure boot is disabled in the BIOS configuration.
+
+# set a bigger font to something actually readable on QHD screens.
+setfont sun12x22
+
+# Persist it as the console font.
+# Set 'FONT=sun12x22' in /etc/vconsole.conf
+vim /etc/vconsole.conf
+
+# This assumes a wifi only system...
+wifi-menu
+
+# Create partitions for a 512GB NVME SSD (first sector prompt -> leave blank, second prompt enter size (M,G))
+# Use separate boot partition so as to allow tools to detect evil-maid checks against initramfs and the kernal
+cgdisk /dev/nvme0n1
+1 512MB EFI partition # Hex code ef00 - name 'efi-partition'?
+2 512MB Boot partition # (to be encrypted) Hex code 8300 - name 'boot-partition'?
+3 256GB OS partiton # (to be encrypted) Hex code 8300 - name 'os-partition'?
+
+# Format the EFI partition
+mkfs.vfat -F32 /dev/nvme0n1p1
+
+# Prepare & open the encrypted boot partition. (Use luks1 - GRUB cannot use luks2) 
+# Initializes a LUKS partition and sets the initial passphrase.
+cryptsetup luksFormat --type luks1 /dev/nvme0n1p2
+
+# Opens the LUKS device <device> and sets up a mapping <name> after successful verification of the supplied passphrase.
+cryptsetup open /dev/nvme0n1p2 cryptboot
+mkfs.ext2 /dev/mapper/cryptboot
+
+# Prepare & open the encrypted main partition
+cryptsetup luksFormat --type luks1 /dev/nvme0n1p3
+cryptsetup open /dev/nvme0n1p3 cryptlvm
+
+# Create encrypted partitions
+# This creates one partions for root, modify if /home or other partitions should be on separate partitions
+pvcreate /dev/mapper/cryptlvm
+vgcreate vg0 /dev/mapper/cryptlvm
+
+# logical volume for swap
+lvcreate --size 24G vg0 --name swap
+
+# logical volume to house OS and files needing varying file permissions.
+lvcreate --size 32GB vg0 --name root
+
+# logical volume for home (https://www.lifewire.com/do-you-need-home-partition-2202048)
+lvcreate -l +100%FREE vg0 --name home
+
+
+# Create filesystems on encrypted partitions
+mkswap /dev/mapper/vg0-swap
+mkfs.ext4 /dev/mapper/vg0-root
+mkfs.ext4 /dev/mapper/vg0-home
+
+# Mount the new system 
+mount /dev/mapper/vg0-root /mnt # /mnt is the installed system
+swapon /dev/mapper/vg0-swap # Not needed but a good thing to test
+mkdir /mnt/boot
+mount /dev/mapper/cryptboot /mnt/boot
+mkdir /mnt/boot/efi
+mount /dev/nvme0n1p1 /mnt/boot/efi
+mkdir /mnt/home
+mount /dev/mapper/vg0-home /mnt/home
+
+# Install the system. 
+# From 'zsh' and continuing, packages are optional. 
+pacstrap /mnt linux linux-firmware base base-devel grub-efi-x86_64 efibootmgr dialog wpa_supplicant lvm2 mkinitcpio cryptsetup zsh vim git
+
+# 'install' fstab
+genfstab -pU /mnt >> /mnt/etc/fstab
+
+# Make /tmp a ramdisk (add the following line to /mnt/etc/fstab)
+echo "tmpfs	/tmp	tmpfs	defaults,noatime,mode=1777	0	0" >> /mnt/etc/fstab
+
+# Change relatime on all non-boot partitions to noatime (reduces wear if using an SSD)
+sed -i 's/relatime/noatime/' /mnt/etc/fstab
+
+# Enter the new system
+arch-chroot /mnt /bin/bash
+
+# Setup system clock
+rm /etc/localtime
+ln -s /usr/share/zoneinfo/US/Central /etc/localtime
+
+# sync hwclock to current time
+hwclock --systohc --utc
+
+# Set the hostname.
+echo PICKAHOSTNAME > /etc/hostname
+
+# Update locale
+echo LANG=en_US.UTF-8 >> /etc/locale.conf
+echo LANGUAGE=en_US >> /etc/locale.conf
+echo LC_ALL=C >> /etc/locale.conf
+sed -i 's/#en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen
+locale-gen
+
+# Set password for root
+passwd
+
+# Add real user remove -s flag if you don't wish to use zsh
+useradd -m -g users -G wheel -s /bin/zsh MYUSERNAME
+passwd MYUSERNAME
+
+# Obtain mkinitcpio - will generate /etc/mkinitcpio.conf
+pacman -S mkinitcpio
+
+# Enter shell with mkinitcpio present (or zsh)
+bash
+
+# Configure mkinitcpio with modules needed for the initrd image
+sed -i 's/MODULES=()/MODULES=(i915 ext4)/' /etc/mkinitcpio.conf
+
+# Add 'encrypt' and 'lvm2' in HOOKS( ... ) before 'filesystems'.
+# When finished, should appear as:
+# HOOKS=(base udev autodetect keyboard keymap consolefont modconf block encrypt lvm2 filesystems fsck)
+vim /etc/mkinitcpio.conf
+
+# Regenerate initrd image.
+mkinitcpio -P
+
+# Setup grub
+# this sets 'allow-discards' (SSD optimization) which has security implications - https://wiki.archlinux.org/index.php/Dm-crypt/Specialties#Discard.2FTRIM_support_for_solid_state_drives_.28SSD.29
+# double check in vim before proceeding
+sed -i 's#GRUB_CMDLINE_LINUX=""#GRUB_CMDLINE_LINUX="cryptdevice=/dev/nvme0n1p3:cryptlvm:allow-discards"#' /etc/default/grub
+sed -i 's/#GRUB_ENABLE_CRYPTODISK=y/GRUB_ENABLE_CRYPTODISK=y/' /etc/default/grub
+mkdir -p /boot/grub
+grub-mkconfig -o /boot/grub/grub.cfg
+grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=ArchLinux --recheck --modules="part_gpt part_msdos"
+
+# Setup mounting of /boot on boot
+echo "cryptboot  /dev/nvme0n1p2      none        luks" >> /etc/crypttab
+
+# Exit chroot - repeat for all shells until 'root@archiso ~ # ' prompt
+exit
+
+# Unmount all partitions
+umount -R /mnt
+swapoff -a
+
+# Reboot into the new system, don't forget to remove the cd/usb
+systemctl reboot
