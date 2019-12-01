@@ -124,8 +124,9 @@ vim /etc/mkinitcpio.conf
 mkinitcpio -P
 
 # Setup grub
-# This sets 'allow-discards' (SSD optimization) which has security implications (https://wiki.archlinux.org/index.php/Dm-crypt/Specialties#Discard.2FTRIM_support_for_solid_state_drives_.28SSD.29)
 # To do so, open /etc/default/grub in vim. There will be two lines (not adjacent) line like the following:
+# Note: this sets 'allow-discards' (SSD optimization) which has security implications (https://wiki.archlinux.org/index.php/Dm-crypt/Specialties#Discard.2FTRIM_support_for_solid_state_drives_.28SSD.29)
+
 
 #GRUB_CMDLINE_LINUX=""
 
@@ -139,13 +140,13 @@ GRUB_CMDLINE_LINUX="cryptdevice=/dev/nvme0n1p3:cryptlvm:allow-discards resume=/d
 
 and 
 
-GRUB_ENABLE_CRYPTODISK=y/
+GRUB_ENABLE_CRYPTODISK=y
 
 # Continue...
 
 mkdir -p /boot/grub
 grub-mkconfig -o /boot/grub/grub.cfg
-grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=ArchLinux --recheck --modules="part_gpt part_msdos"
+grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=ArchLinux --recheck --modules="part_gpt part_msdos lvm"
 
 # Setup mounting of /boot on boot
 echo "cryptboot  /dev/nvme0n1p2      none        luks" >> /etc/crypttab
