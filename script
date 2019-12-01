@@ -44,7 +44,7 @@ cryptsetup open /dev/nvme0n1p3 cryptlvm
 pvcreate /dev/mapper/cryptlvm
 vgcreate vg0 /dev/mapper/cryptlvm
 
-# logical volume for swap
+# logical volume for swap (https://askubuntu.com/questions/904372/swap-partition-vs-swap-file)
 lvcreate --size 24G vg0 --name swap
 
 # logical volume to house OS and files needing varying file permissions.
@@ -124,10 +124,25 @@ vim /etc/mkinitcpio.conf
 mkinitcpio -P
 
 # Setup grub
-# this sets 'allow-discards' (SSD optimization) which has security implications - https://wiki.archlinux.org/index.php/Dm-crypt/Specialties#Discard.2FTRIM_support_for_solid_state_drives_.28SSD.29
-# double check in vim before proceeding
-sed -i 's#GRUB_CMDLINE_LINUX=""#GRUB_CMDLINE_LINUX="cryptdevice=/dev/nvme0n1p3:cryptlvm:allow-discards"#' /etc/default/grub
-sed -i 's/#GRUB_ENABLE_CRYPTODISK=y/GRUB_ENABLE_CRYPTODISK=y/' /etc/default/grub
+# This sets 'allow-discards' (SSD optimization) which has security implications (https://wiki.archlinux.org/index.php/Dm-crypt/Specialties#Discard.2FTRIM_support_for_solid_state_drives_.28SSD.29)
+# To do so, open /etc/default/grub in vim. There will be two lines (not adjacent) line like the following:
+
+#GRUB_CMDLINE_LINUX=""
+
+and 
+
+#GRUB_ENABLE_CRYPTODISK=y
+
+# Change them repectively to:
+
+GRUB_CMDLINE_LINUX="cryptdevice=/dev/nvme0n1p3:cryptlvm:allow-discards resume=/dev/mapper/vg0-swap"
+
+and 
+
+GRUB_ENABLE_CRYPTODISK=y/
+
+# Continue...
+
 mkdir -p /boot/grub
 grub-mkconfig -o /boot/grub/grub.cfg
 grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=ArchLinux --recheck --modules="part_gpt part_msdos"
