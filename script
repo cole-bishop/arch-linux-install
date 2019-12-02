@@ -112,6 +112,17 @@ passwd MYUSERNAME
 # Obtain mkinitcpio - will generate /etc/mkinitcpio.conf
 pacman -S mkinitcpio
 
+# Create keyfile to be picked by root and boot. 
+# This will help avoid having to type passphrase twice. Though this is accomplished
+# as the keyfile made here will be an additional key to root and boot luks partitions. 
+dd bs=512 count=4 if=/dev/urandom of=/crypto_keyfile.bin iflag=fullblock
+chmod 000 /crypto_keyfile.bin # use default name anticipated by initramfs
+chmod 600 /boot/initramfs-linux*
+
+# Add keyfile as key to devices.
+cryptsetup -v luksAddKey /dev/nvme0n1p2 /crypto_keyfile # boot partition
+cryptsetup -v luksAddKey /dev/nvme0n1p3 /crypto_keyfile # root partition
+
 # Configure mkinitcpio with modules needed for the initrd image
 sed -i 's/MODULES=()/MODULES=(i915 ext4)/' /etc/mkinitcpio.conf
 
@@ -143,7 +154,9 @@ and
 GRUB_ENABLE_CRYPTODISK=y
 
 # Continue...
-
+# dd bs=512 count=4 if=/dev/random of=/root/cryptlvm.keyfile iflag=fullblock
+# chmod 000 /root/cryptlvm.keyfile
+# chmod 600 /boot/initramfs-linux*
 mkdir -p /boot/grub
 grub-mkconfig -o /boot/grub/grub.cfg
 grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=ArchLinux --recheck --modules="part_gpt part_msdos lvm"
