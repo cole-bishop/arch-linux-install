@@ -128,7 +128,7 @@ sed -i 's/MODULES=()/MODULES=(i915 ext4)/' /etc/mkinitcpio.conf
 
 # Add 'encrypt' and 'lvm2' in HOOKS( ... ) before 'filesystems'.
 # When finished, should appear as:
-# HOOKS=(base udev autodetect keyboard keymap consolefont modconf block encrypt lvm2 filesystems fsck)
+# HOOKS=(base udev autodetect keyboard keymap consolefont modconf block encrypt lvm2 filesystems resume fsck)
 vim /etc/mkinitcpio.conf
 
 # Regenerate initrd image.
@@ -162,7 +162,7 @@ grub-mkconfig -o /boot/grub/grub.cfg
 grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=ArchLinux --recheck --modules="part_gpt part_msdos lvm"
 
 # Setup mounting of /boot on boot
-echo "cryptboot  /dev/nvme0n1p2      none        luks" >> /etc/crypttab
+echo "cryptboot  /dev/nvme0n1p2      /crypto_keyfile.bin        luks" >> /etc/crypttab
 
 # Exit chroot - repeat for all shells until 'root@archiso ~ # ' prompt
 exit
