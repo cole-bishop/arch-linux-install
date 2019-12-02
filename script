@@ -120,11 +120,14 @@ chmod 000 /crypto_keyfile.bin # use default name anticipated by initramfs
 chmod 600 /boot/initramfs-linux*
 
 # Add keyfile as key to devices.
-cryptsetup -v luksAddKey /dev/nvme0n1p2 /crypto_keyfile # boot partition
-cryptsetup -v luksAddKey /dev/nvme0n1p3 /crypto_keyfile # root partition
+cryptsetup -v luksAddKey /dev/nvme0n1p2 /crypto_keyfile # /boot
+cryptsetup -v luksAddKey /dev/nvme0n1p3 /crypto_keyfile # /
 
 # Configure mkinitcpio with modules needed for the initrd image
 sed -i 's/MODULES=()/MODULES=(i915 ext4)/' /etc/mkinitcpio.conf
+
+# Configure mkinitcpio to use keyfile for /
+sed -i 's/FILES=()/FILES=(/crypto_keyfile.bin)/' /etc/mkinitcpio.conf
 
 # Add 'encrypt' and 'lvm2' in HOOKS( ... ) before 'filesystems'.
 # When finished, should appear as:
