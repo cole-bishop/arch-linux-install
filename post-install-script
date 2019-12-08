@@ -1,0 +1,9 @@
+# See https://wiki.archlinux.org/index.php/WPA_supplicant
+# The contents of the below file are to be:
+# ctrl_interface=/run/wpa_supplicant
+# update_config=1
+vim /etc/wpa_supplicant/wpa_supplicant.conf
+
+# start wpa_supplicant.
+# Select the desired interface from "ip link".
+wpa_supplicant -B -i <interface> -c /etc/wpa_supplicant/wpa_supplicant.conf
