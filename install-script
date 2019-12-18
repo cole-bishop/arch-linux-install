@@ -141,6 +141,11 @@ passwd
 useradd -m -g users -G wheel -s /bin/zsh MYUSERNAME
 passwd MYUSERNAME
 
+# Enable the user to use the 'sudo' command prefix
+su # enter root
+# Below the line "root ALL=(ALL) ALL" in /etc/sudoers, add the following:
+# USERNAME ALL=(ALL) ALL
+
 # Obtain mkinitcpio - will generate /etc/mkinitcpio.conf
 pacman -S mkinitcpio
 
