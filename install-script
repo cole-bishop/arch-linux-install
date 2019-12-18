@@ -85,6 +85,9 @@ sed -i 's/relatime/noatime/' /mnt/etc/fstab
 # Enter the new system
 arch-chroot /mnt /bin/bash
 
+# Use all currently available US mirrors for mirrorlist (may require sudo)
+curl -o /etc/pacman.d/mirrorlist https://www.archlinux.org/mirrorlist/?country=US&protocol=http&protocol=https&ip_version=4&ip_version=6&use_mirror_status=on
+
 # Install NetworkManager while the connection from wifi-menu persists.
 pacman -S networkmanager
 
