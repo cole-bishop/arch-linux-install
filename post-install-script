@@ -3,8 +3,11 @@
 cd $HOME
 which yay || git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
 
-yay -S network-manager-applet bluez bluez-utils blueman blueman-applet
+yay -S network-manager-applet bluez bluez-utils blueman blueman-applet powerkit neovim
 
 # enable and start necessary services (for systray and startup)
 sudo systemctl enable NetworkManager.service && systemctl start NetworkManager.service
 sudo systemctl enable bluetooth.service && systemctl start bluetooth.service
+
+# If no SpaceVim installation, get it.
+[ -d .SpaceVim ] || curl -sLf https://spacevim.org/install.sh | bash
