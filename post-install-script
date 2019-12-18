@@ -3,7 +3,7 @@
 cd $HOME
 which yay || git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
 
-yay -S network-manager-applet bluez bluez-utils blueman blueman-applet powerkit neovim
+xargs -p -a pkglist.txt yay --noredownload --norebuild --clean 
 
 # enable and start necessary services (for systray and startup)
 sudo systemctl enable NetworkManager.service && systemctl start NetworkManager.service
