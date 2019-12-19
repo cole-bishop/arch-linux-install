@@ -8,6 +8,7 @@ xargs -p -a pkglist.txt yay --noredownload --norebuild --clean
 # enable and start necessary services (for systray and startup)
 sudo systemctl enable NetworkManager.service && systemctl start NetworkManager.service
 sudo systemctl enable bluetooth.service && systemctl start bluetooth.service
+sudo systemctl enable sshd.service && systemctl start sshd.service
 
 # If no SpaceVim installation, get it.
 [ -d .SpaceVim ] || curl -sLf https://spacevim.org/install.sh | bash
