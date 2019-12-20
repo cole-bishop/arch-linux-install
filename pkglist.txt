@@ -21,6 +21,7 @@ findutils
 firefox
 flameshot
 flex
+fzf
 gawk
 gcc
 gettext
