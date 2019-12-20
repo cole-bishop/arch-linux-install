@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
+
 # Prepare yay pacman wrapper (in $HOME)
 cd $HOME
 which yay || git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
 cd ..
+rm -rf yay
 
-xargs -p -a pkglist.txt yay --noredownload --norebuild --clean 
+xargs -p -a pkglist.txt yay --noredownload --norebuild --clean -S
 
 # enable and start necessary services (for systray and startup)
 sudo systemctl enable NetworkManager.service && systemctl start NetworkManager.service
@@ -13,3 +15,6 @@ sudo systemctl enable sshd.service && systemctl start sshd.service
 
 # If no SpaceVim installation, get it.
 [ -d .SpaceVim ] || curl -sLf https://spacevim.org/install.sh | bash
+
+# Sdkman
+curl -s "https://get.sdkman.io" | bash
