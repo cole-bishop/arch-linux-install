@@ -3,6 +3,7 @@ arandr
 autoconf
 automake
 awesome
+baobab
 base
 binutils
 bison
@@ -38,6 +39,7 @@ lxappearance
 m4
 make
 man-db
+meld
 mkinitcpio
 neovim
 network-manager-applet
@@ -49,12 +51,15 @@ pasystray
 patch
 pavolume-git
 pkgconf
+playerctl
 powerkit
 powerline
 powerline-fonts
 pulseaudio-ctl
+remmina
 rofi
 sed
+spotify
 stow
 sudo
 texinfo
@@ -63,6 +68,8 @@ thunar-volman
 tmux
 tree
 ttf-google-fonts-git
+ttf-ms-fonts
+unzip
 vim
 visual-studio-code-bin
 wget
@@ -75,4 +82,5 @@ xorg-xinput
 xsel
 xterm
 yay
+zip
 zsh
