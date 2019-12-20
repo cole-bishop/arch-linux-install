@@ -19,6 +19,7 @@ fakeroot
 file
 findutils
 firefox
+flameshot
 flex
 gawk
 gcc
@@ -56,6 +57,8 @@ powerkit
 powerline
 powerline-fonts
 pulseaudio-ctl
+python-pip
+python3-aur
 remmina
 rofi
 sed

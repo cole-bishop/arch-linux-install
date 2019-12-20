@@ -13,8 +13,12 @@ sudo systemctl enable NetworkManager.service && systemctl start NetworkManager.s
 sudo systemctl enable bluetooth.service && systemctl start bluetooth.service
 sudo systemctl enable sshd.service && systemctl start sshd.service
 
-# If no SpaceVim installation, get it.
-[ -d .SpaceVim ] || curl -sLf https://spacevim.org/install.sh | bash
+# The following packages are obtained if missions:
+# SpaceVim
+[ -d "$HOME/.SpaceVim" ] || curl -sLf https://spacevim.org/install.sh | bash
 
 # Sdkman
-curl -s "https://get.sdkman.io" | bash
+which sdk || curl -s "https://get.sdkman.io" | bash
+
+# Pip packages
+pip install --user tmuxp
