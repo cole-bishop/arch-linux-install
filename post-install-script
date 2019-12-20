@@ -2,6 +2,7 @@
 # Prepare yay pacman wrapper (in $HOME)
 cd $HOME
 which yay || git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
+cd ..
 
 xargs -p -a pkglist.txt yay --noredownload --norebuild --clean 
 
