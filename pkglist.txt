@@ -10,6 +10,7 @@ bison
 blueman
 bluez-utils
 cbatticon
+clight
 cryptsetup
 dialog
 dunst
@@ -33,6 +34,7 @@ grub
 gvfs
 gzip
 htop
+intellij-idea-community-edition-jre
 libtool
 linux
 linux-firmware
@@ -43,15 +45,17 @@ make
 man-db
 meld
 mkinitcpio
+neofetch
 neovim
 network-manager-applet
 networkmanager
 odrive-bin
 openssh
 pacman
-pasystray
+paman
+pasystray-git
 patch
-pavolume-git
+pavucontrol
 pkgconf
 playerctl
 powerkit
@@ -63,6 +67,7 @@ python3-aur
 remmina
 rofi
 sed
+slock-gruvbox
 spotify
 stow
 sudo
@@ -73,8 +78,10 @@ tmux
 tree
 ttf-google-fonts-git
 ttf-ms-fonts
+tzupdate
 unzip
 vim
+virtualbox
 visual-studio-code-bin
 wget
 which
