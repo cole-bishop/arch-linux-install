@@ -3,7 +3,7 @@
 # Prepare yay pacman wrapper (in $HOME)
 cd $HOME
 which yay || git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
-cd ..
+cd $HOME
 rm -rf yay
 
 xargs -p -a pkglist.txt yay --noredownload --norebuild --clean -S
@@ -14,7 +14,7 @@ sudo systemctl enable bluetooth.service && systemctl start bluetooth.service
 sudo systemctl enable sshd.service && systemctl start sshd.service
 sudo systemctl enable systemd-timesyncd.service && systemctl start systemd-timesyncd.service # synchronizing network time
 
-# The following packages are obtained if missions:
+# Tools are obtained if missing:
 # SpaceVim
 [ -d "$HOME/.SpaceVim" ] || curl -sLf https://spacevim.org/install.sh | bash
 
