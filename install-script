@@ -1,65 +1,66 @@
-# Install ARCH Linux with encrypted file-system and UEFI on a blank (all unallocated space) NVME SSD
-# The official installation guide (https://wiki.archlinux.org/index.php/Installation_Guide) contains a more verbose description.
+# Download the archiso base image from https://www.archlinux.org/
+# Copy ISO to USB drive.
+dd if=archlinux.img of=/dev/sdX bs=16M && sync
 
-# Download the archiso image from https://www.archlinux.org/
-# Copy to a usb-drive
-dd if=archlinux.img of=/dev/sdX bs=16M && sync # on linux
+# Boot from the usb media. Disable "Secure Boot" temporarily in BIOS setting if issues.
 
-# Boot from the usb. If the usb fails to boot, make sure that secure boot is disabled in the BIOS configuration.
-
-# set a bigger font to something actually readable on QHD screens.
+# Use a more readable font for QHD screens.
 setfont sun12x22
 
 # Persist it as the console font.
 # Set 'FONT=sun12x22' in /etc/vconsole.conf
 vim /etc/vconsole.conf
 
-# This assumes a wifi only system...
+# GUI for wifi connection.
 wifi-menu
 
-# Create partitions for a 512GB NVME SSD (first sector prompt -> leave blank, second prompt enter size (M,G))
-# Use separate boot partition so as to allow tools to detect evil-maid checks against initramfs and the kernal
+# Create partitions for a blank NVMe SSD.
+# First sector prompt -> leave blank,
+# Second prompt -> size (M -> Megabytes, G -> Gigabytes))
 cgdisk /dev/nvme0n1
-1 512MB EFI partition # Hex code ef00 - name 'efi-partition'?
-2 512MB Boot partition # (to be encrypted) Hex code 8300 - name 'boot-partition'?
-3 256GB OS partiton # (to be encrypted) Hex code 8300 - name 'os-partition'?
+# 1 512MB EFI partition # Hex code ef00 - name 'efi-partition'?
+# 2 512MB Boot partition # (to be encrypted) Hex code 8300 - name 'boot-partition'?
+# 3 256GB OS partiton # (to be encrypted) Hex code 8300 - name 'os-partition'?
 
-# Format the EFI partition
+# Format the EFI partition.
 mkfs.vfat -F32 /dev/nvme0n1p1
 
-# Prepare & open the encrypted boot partition. (Use luks1 - GRUB cannot use luks2) 
-# Initializes a LUKS partition and sets the initial passphrase.
+# Prepare & open the encrypted boot partition. 
+# Use luks1, as GRUB cannot use luks2. (See: https://savannah.gnu.org/bugs/?55093)
+# Initializes a LUKS partition and set the initial passphrase.
 cryptsetup luksFormat --type luks1 /dev/nvme0n1p2
 
-# Opens the LUKS device <device> and sets up a mapping <name> after successful verification of the supplied passphrase.
+# Opens the LUKS device and sets up a mapping.
 cryptsetup open /dev/nvme0n1p2 cryptboot
 mkfs.ext2 /dev/mapper/cryptboot
 
-# Prepare & open the encrypted main partition
+# Prepare & open the encrypted main partition.
 cryptsetup luksFormat --type luks1 /dev/nvme0n1p3
 cryptsetup open /dev/nvme0n1p3 cryptlvm
 
-# Create encrypted partitions
-# This creates one partions for root, modify if /home or other partitions should be on separate partitions
+# Create encrypted partitions.
+# This creates one partions for root, modify if /home or
+# other partitions should be on additional partitions.
 pvcreate /dev/mapper/cryptlvm
 vgcreate vg0 /dev/mapper/cryptlvm
 
-# logical volume for swap (https://askubuntu.com/questions/904372/swap-partition-vs-swap-file)
+# Logical volume for swap.
+# (https://askubuntu.com/questions/904372/swap-partition-vs-swap-file)
 lvcreate --size 24G vg0 --name swap
 
-# logical volume to house OS and files needing varying file permissions.
+# Logical volume for root.
 lvcreate --size 32GB vg0 --name root
 
-# logical volume for home (https://www.lifewire.com/do-you-need-home-partition-2202048)
+# Logical volume for home.
+# (https://www.lifewire.com/do-you-need-home-partition-2202048)
 lvcreate -l +100%FREE vg0 --name home
 
-
-# Create filesystems on encrypted partitions
+# Create filesystems on encrypted partitions.
 mkswap /dev/mapper/vg0-swap
 mkfs.ext4 /dev/mapper/vg0-root
 mkfs.ext4 /dev/mapper/vg0-home
 
-# Mount the new system 
+# Mount the new system.
 mount /dev/mapper/vg0-root /mnt # /mnt is the installed system
 swapon /dev/mapper/vg0-swap # Not needed but a good thing to test
 mkdir /mnt/boot
@@ -70,146 +71,160 @@ mkdir /mnt/home
 mount /dev/mapper/vg0-home /mnt/home
 
 # Install the system. 
-# From 'zsh' and continuing, packages are optional. 
 pacstrap /mnt linux linux-firmware base base-devel grub-efi-x86_64 efibootmgr dialog wpa_supplicant lvm2 mkinitcpio cryptsetup zsh vim git
 
-# 'install' fstab
+# Generate fstab from current mounts.
 genfstab -pU /mnt >> /mnt/etc/fstab
 
-# Make /tmp a ramdisk (add the following line to /mnt/etc/fstab)
+# Make /tmp a ramdisk.
+# (add the following line to /mnt/etc/fstab)
 echo "tmpfs	/tmp	tmpfs	defaults,noatime,mode=1777	0	0" >> /mnt/etc/fstab
 
-# Change relatime on all non-boot partitions to noatime (reduces wear if using an SSD)
+# Change 'relatime' on all non-boot partitions to 'noatime'.
+# (reduces wear)
 sed -i 's/relatime/noatime/' /mnt/etc/fstab
 
-# Enter the new system
+# Enter the new system.
 arch-chroot /mnt /bin/bash
 
-# Use all currently available US mirrors for mirrorlist (may require sudo)
+# Use all currently available US mirrors for mirrorlist. (may require sudo)
 curl -o /etc/pacman.d/mirrorlist https://www.archlinux.org/mirrorlist/?country=US&protocol=http&protocol=https&ip_version=4&ip_version=6&use_mirror_status=on
-# uncomment servers
+
+# Uncomment servers.
 sed -i -e 's/#Server/Server/g'
 
 # Install NetworkManager while the connection from wifi-menu persists.
 pacman -S networkmanager
 
 # See: https://evilshit.wordpress.com/2012/09/15/how-to-make-networkmanager-and-network-manager-applet-work-on-arch-linux-with-gnome3/
-# first enter as root
+# first enter as root:
 su
+
+# Allow NetworkManager to start on boot.
 systemctl enable NetworkManager.service
 
-# Add username to network group
-gpasswd -a USERNAME network
+# Remove services now managed by NetworkManager
+systemctl disable dhcpcd.service
+systemctl disable dhcpcd@.service
+systemctl stop dhcpcd.service
+systemctl stop dhcpcd@.service
 
-# Turn off network interface controllers
-ip link set down <enter wifi interface name, like wlan0>
-ip link set down <enter ethernet interface name, like eth0>
+# Turn off network interface controllers.
+# (See wordpress link)
+ip link set down <enter wifi interface name (eg wlan0)>
+ip link set down <enter ethernet interface name (eg: eth0)>
 
-# Start necessary services
+# Start NetworkManager service and other needed services.
 systemctl start wpa_supplicant.service
 systemctl start NetworkManager.service
 
-# Update all packages while we're at it
+# Now, one can use nmtui for connecting in place of wifi-menu.
+# (Ready after reboots) Connect now using nmtui
+nmtui
+
+# Update all packages.
 pacman -Syu
 
-# exit root
+# exit root.
 exit 
 
-# now, use nmtui for connecting to wifi the lazy way
-
-# Setup system clock
+# Setup system clock.
 rm /etc/localtime
-ln -s /usr/share/zoneinfo/US/Central /etc/localtime
+ln -s /usr/share/zoneinfo/US/Chicago /etc/localtime
 
-# sync hwclock to current time
+# Sync hwclock to current time.
 hwclock --systohc --utc
 
 # Set the hostname.
 echo PICKAHOSTNAME > /etc/hostname
 
-# Update locale
+# Update locale.
 echo LANG=en_US.UTF-8 >> /etc/locale.conf
 echo LANGUAGE=en_US >> /etc/locale.conf
 echo LC_ALL=C >> /etc/locale.conf
 sed -i 's/#en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen
 locale-gen
 
-# Set password for root
+# Set password for root.
 passwd
 
-# Add real user remove -s flag if you don't wish to use zsh
-useradd -m -g users -G wheel -s /bin/zsh MYUSERNAME
+# Add real user remove -s flag if you don't wish to use zsh.
+useradd -m -g users -G wheel,network -s /bin/zsh MYUSERNAME
 passwd MYUSERNAME
 
-# Enable the user to use the 'sudo' command prefix
-su # enter root
-# Below the line "root ALL=(ALL) ALL" in /etc/sudoers, add the following:
-# USERNAME ALL=(ALL) ALL
+# Enable the user to use the 'sudo' command prefix.
+# enter root:
+su
+# Below the line "root ALL=(ALL) ALL" in /etc/sudoers,
+# add the following:
+# MYUSERNAME ALL=(ALL) ALL
 
-# Obtain mkinitcpio - will generate /etc/mkinitcpio.conf
+# Obtain mkinitcpio. (will generate /etc/mkinitcpio.conf)
 pacman -S mkinitcpio
 
 # Create keyfile to be picked by root and boot. 
-# This will help avoid having to type passphrase twice. Though this is accomplished
-# as the keyfile made here will be an additional key to root and boot luks partitions. 
+# This will avoid having to type passphrase twice.
+# Though this is accomplished as the keyfile made here
+# will be an additional key to / and /boot luks partitions. 
 dd bs=512 count=4 if=/dev/urandom of=/crypto_keyfile.bin iflag=fullblock
-chmod 000 /crypto_keyfile.bin # use default name anticipated by initramfs
+# use default name anticipated by initramfs.
+chmod 000 /crypto_keyfile.bin 
 chmod 600 /boot/initramfs-linux*
 
 # Add keyfile as key to devices.
 cryptsetup -v luksAddKey /dev/nvme0n1p2 /crypto_keyfile # /boot
 cryptsetup -v luksAddKey /dev/nvme0n1p3 /crypto_keyfile # /
 
-# Configure mkinitcpio with modules needed for the initrd image
+# Configure mkinitcpio with modules needed for the initrd image.
 sed -i 's/MODULES=()/MODULES=(i915 ext4)/' /etc/mkinitcpio.conf
 
 # Configure mkinitcpio to use keyfile for /
 sed -i 's/FILES=()/FILES=(/crypto_keyfile.bin)/' /etc/mkinitcpio.conf
 
 # Add 'encrypt' and 'lvm2' in HOOKS( ... ) before 'filesystems'.
-# When finished, should appear as:
+# Should appear as:
 # HOOKS=(base udev autodetect keyboard keymap consolefont modconf block encrypt lvm2 filesystems resume fsck)
 vim /etc/mkinitcpio.conf
 
 # Regenerate initrd image.
 mkinitcpio -P
 
-# Setup grub
-# To do so, open /etc/default/grub in vim. There will be two lines (not adjacent) line like the following:
-# Note: this sets 'allow-discards' (SSD optimization) which has security implications (https://wiki.archlinux.org/index.php/Dm-crypt/Specialties#Discard.2FTRIM_support_for_solid_state_drives_.28SSD.29)
-
+# Setup grub.
+# Note: this sets 'allow-discards' (SSD optimization) 
+# which has security implications. 
+# (https://wiki.archlinux.org/index.php/Dm-crypt/Specialties#Discard.2FTRIM_support_for_solid_state_drives_.28SSD.29)
+# Edit /etc/default/grub.
+# There will be two lines (not adjacent) like the following:
 
 #GRUB_CMDLINE_LINUX=""
 
-and 
+# and 
 
 #GRUB_ENABLE_CRYPTODISK=y
 
-# Change them repectively to:
+# Change them to (respectively):
 
 GRUB_CMDLINE_LINUX="cryptdevice=/dev/nvme0n1p3:cryptlvm:allow-discards resume=/dev/mapper/vg0-swap"
 
-and 
+# and 
 
 GRUB_ENABLE_CRYPTODISK=y
 
-# Continue...
-# dd bs=512 count=4 if=/dev/random of=/root/cryptlvm.keyfile iflag=fullblock
-# chmod 000 /root/cryptlvm.keyfile
-# chmod 600 /boot/initramfs-linux*
+# Continuing. Prepare GRUB.
 mkdir -p /boot/grub
 grub-mkconfig -o /boot/grub/grub.cfg
 grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=ArchLinux --recheck --modules="part_gpt part_msdos lvm"
 
-# Setup mounting of /boot on boot
+# Setup mounting of /boot on boot.
 echo "cryptboot  /dev/nvme0n1p2      /crypto_keyfile.bin        luks" >> /etc/crypttab
 
-# Exit chroot - repeat for all shells until 'root@archiso ~ # ' prompt
+# Exit chroot. Return to archiso 'root@archiso ~ # ' prompt.
 exit
 
-# Unmount all partitions
+# Unmount all partitions.
 umount -R /mnt
 swapoff -a
 
-# Reboot into the new system, don't forget to remove the cd/usb
+# Reboot into the new system.
+# Remove archiso media before power on.
 systemctl reboot
