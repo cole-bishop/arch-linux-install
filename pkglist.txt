@@ -12,6 +12,7 @@ bluez-utils
 cbatticon
 clight
 cryptsetup
+cups
 dialog
 dunst
 efibootmgr
@@ -49,6 +50,7 @@ neofetch
 neovim
 network-manager-applet
 networkmanager
+nss-mdns
 odrive-bin
 openssh
 pacman

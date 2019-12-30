@@ -13,6 +13,8 @@ sudo systemctl enable NetworkManager.service && systemctl start NetworkManager.s
 sudo systemctl enable bluetooth.service && systemctl start bluetooth.service
 sudo systemctl enable sshd.service && systemctl start sshd.service
 sudo systemctl enable systemd-timesyncd.service && systemctl start systemd-timesyncd.service # synchronizing network time
+sudo systemctl enable org.cups.cupsd.service && systemctl start org.cups.cupsd.service # service for discovering printers
+sudo systemctl enable avahi-daemon.service && sudo systemctl start avahi-daemon.service # multicast discovery (needed for cups)
 
 # Tools are obtained if missing:
 # SpaceVim
