@@ -9,6 +9,8 @@ binutils
 bison
 blueman
 bluez-utils
+brave-bin
+brother-mfc-j985dw
 cbatticon
 clight
 cryptsetup
@@ -70,6 +72,7 @@ remmina
 rofi
 sed
 slock-gruvbox
+speedtest-cli
 spotify
 stow
 sudo
