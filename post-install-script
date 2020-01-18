@@ -1,12 +1,12 @@
-#!/usr/bin/env bash
-
 # Prepare yay pacman wrapper (in $HOME)
-cd $HOME
-which yay || git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
-cd $HOME
+git clone https://aur.archlinux.org/yay.git "$HOME/yay"
+cd "$HOME/yay"
+makepkg -si
+cd
 rm -rf yay
 
-xargs -p -a pkglist.txt yay --noredownload --norebuild --clean -S
+# Install all packages from pkglist.txt.
+xargs -p -a pkglist.txt yay -S
 
 # enable and start necessary services (for systray and startup)
 sudo systemctl enable NetworkManager.service && systemctl start NetworkManager.service
@@ -22,12 +22,11 @@ sudo systemctl enable org.cups.cupsd.service && systemctl start org.cups.cupsd.s
 sudo systemctl enable avahi-daemon.service && sudo systemctl start avahi-daemon.service # multicast discovery (needed for cups)
 sudo systemctl enable cups-browsed.service && sudo systemctl start cups-browsed.service
 
-# Tools are obtained if missing:
 # SpaceVim
-[ -d "$HOME/.SpaceVim" ] || curl -sLf https://spacevim.org/install.sh | bash
+curl -sLf https://spacevim.org/install.sh | bash
 
 # Sdkman
-which sdk || curl -s "https://get.sdkman.io" | bash
+curl -s "https://get.sdkman.io" | bash
 
 # Pip packages
-which pip && which tmuxp || pip install --user tmuxp
+pip install --user tmuxp
