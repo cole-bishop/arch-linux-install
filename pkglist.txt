@@ -38,6 +38,7 @@ gvfs
 gzip
 htop
 intellij-idea-community-edition-jre
+libreoffice-still
 libtool
 linux
 linux-firmware
@@ -83,6 +84,7 @@ tmux
 tree
 ttf-google-fonts-git
 ttf-ms-fonts
+tuxguitar
 tzupdate
 unzip
 vim
