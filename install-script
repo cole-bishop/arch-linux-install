@@ -28,7 +28,7 @@ cryptsetup luksFormat --type luks1 /dev/nvme0n1p2
 
 # Opens the LUKS device and sets up a mapping.
 cryptsetup open /dev/nvme0n1p2 cryptboot
-mkfs.ext2 /dev/mapper/cryptboot
+mkfs.ext4 /dev/mapper/cryptboot
 
 # Prepare & open the encrypted main partition.
 cryptsetup luksFormat --type luks1 /dev/nvme0n1p3
