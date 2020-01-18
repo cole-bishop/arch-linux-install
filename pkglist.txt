@@ -101,4 +101,5 @@ xsel
 xterm
 yay
 zip
+zplug
 zsh
