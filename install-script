@@ -7,10 +7,6 @@ dd if=archlinux.img of=/dev/sdX bs=16M && sync
 # Use a more readable font for QHD screens.
 setfont sun12x22
 
-# Persist it as the console font.
-# Set 'FONT=sun12x22' in /etc/vconsole.conf
-vim /etc/vconsole.conf
-
 # GUI for wifi connection.
 wifi-menu
 
@@ -91,15 +87,12 @@ arch-chroot /mnt /bin/bash
 curl -o /etc/pacman.d/mirrorlist https://www.archlinux.org/mirrorlist/?country=US&protocol=http&protocol=https&ip_version=4&ip_version=6&use_mirror_status=on
 
 # Uncomment servers.
-sed -i -e 's/#Server/Server/g'
+sed -i -e 's/#Server/Server/g' /etc/pacman.d/mirrorlist
 
 # Install NetworkManager while the connection from wifi-menu persists.
 pacman -S networkmanager
 
 # See: https://evilshit.wordpress.com/2012/09/15/how-to-make-networkmanager-and-network-manager-applet-work-on-arch-linux-with-gnome3/
-# first enter as root:
-su
-
 # Allow NetworkManager to start on boot.
 systemctl enable NetworkManager.service
 
@@ -118,9 +111,7 @@ ip link set down <enter ethernet interface name (eg: eth0)>
 systemctl start wpa_supplicant.service
 systemctl start NetworkManager.service
 
-# Now, one can use nmtui for connecting in place of wifi-menu.
-# (Ready after reboots) Connect now using nmtui
-nmtui
+# Now, use 'nmtui' for connecting in place of 'wifi-menu'.
 
 # Update all packages.
 pacman -Syu
@@ -152,9 +143,6 @@ passwd
 useradd -m -g users -G wheel,network -s /bin/zsh MYUSERNAME
 passwd MYUSERNAME
 
-# Enable the user to use the 'sudo' command prefix.
-# enter root:
-su
 # Below the line "root ALL=(ALL) ALL" in /etc/sudoers,
 # add the following:
 # MYUSERNAME ALL=(ALL) ALL
@@ -179,7 +167,7 @@ cryptsetup -v luksAddKey /dev/nvme0n1p3 /crypto_keyfile # /
 sed -i 's/MODULES=()/MODULES=(i915 ext4)/' /etc/mkinitcpio.conf
 
 # Configure mkinitcpio to use keyfile for /
-sed -i 's/FILES=()/FILES=(/crypto_keyfile.bin)/' /etc/mkinitcpio.conf
+sed -i 's#FILES=()#FILES=(/crypto_keyfile.bin)#' /etc/mkinitcpio.conf
 
 # Add 'encrypt' and 'lvm2' in HOOKS( ... ) before 'filesystems'.
 # Should appear as:
@@ -217,6 +205,10 @@ grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=ArchL
 
 # Setup mounting of /boot on boot.
 echo "cryptboot  /dev/nvme0n1p2      /crypto_keyfile.bin        luks" >> /etc/crypttab
+
+# Persist it as the console font. (do so after full installation)
+# Set 'FONT=sun12x22' in /etc/vconsole.conf
+vim /etc/vconsole.conf
 
 # Exit chroot. Return to archiso 'root@archiso ~ # ' prompt.
 exit
