@@ -7,12 +7,12 @@ baobab
 base
 binutils
 bison
+bitwarden-bin
 blueman
 bluez-utils
 brave-bin
 brother-mfc-j985dw
 cbatticon
-clight
 cryptsetup
 cups
 dialog
