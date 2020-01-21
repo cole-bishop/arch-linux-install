@@ -23,7 +23,8 @@ timedatectl set-timezone America/Chicago
 # (https://wiki.archlinux.org/index.php/CUPS#cups-browsed)
 sudo systemctl enable org.cups.cupsd.service && systemctl start org.cups.cupsd.service # service for discovering printers
 sudo systemctl enable avahi-daemon.service && sudo systemctl start avahi-daemon.service # multicast discovery (needed for cups)
-sudo systemctl enable cups-browsed.service && sudo systemctl start cups-browsed.service
+sudo systemctl enable cups-browsed.service && sudo systemctl start cups-browsed.service # printer manager at http://localhost:631
+sudo systemctl enable docker.service && sudo systemctl start docker.service # docker
 
 # SpaceVim
 curl -sLf https://spacevim.org/install.sh | bash
