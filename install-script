@@ -121,7 +121,7 @@ exit
 
 # Setup system clock.
 rm /etc/localtime
-ln -s /usr/share/zoneinfo/US/Chicago /etc/localtime
+ln -sf /usr/share/zoneinfo/America/Chicago /etc/localtime
 
 # Sync hwclock to current time.
 hwclock --systohc --utc
