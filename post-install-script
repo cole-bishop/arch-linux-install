@@ -16,6 +16,9 @@ sudo systemctl enable sshd.service && systemctl start sshd.service
 # Services for network time.
 sudo systemctl enable systemd-timesyncd.service && systemctl start systemd-timesyncd.service # synchronizing network time
 
+# See available with 'timedatectl list-timezones'.
+timedatectl set-timezone America/Chicago
+
 # Services needed for printing to devices on local network.
 # (https://wiki.archlinux.org/index.php/CUPS#cups-browsed)
 sudo systemctl enable org.cups.cupsd.service && systemctl start org.cups.cupsd.service # service for discovering printers
