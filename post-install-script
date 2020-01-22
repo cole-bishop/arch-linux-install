@@ -34,3 +34,7 @@ curl -s "https://get.sdkman.io" | bash
 
 # Pip packages
 pip install --user tmuxp
+
+# Tmux. Install tpm.
+mkdir "$HOME/.tmux/plugins/tpm"
+git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
