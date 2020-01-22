@@ -1,8 +1,8 @@
 # Arch Linux Install
 A conservative arch linux installation featuring an encrypted `/` and `/boot`. The installation
- phases are divided into pre (manual) and post scripts to allow for pick and choose functionality. 
-## install-script (pre)
-The file containing the commands to execute. Intended to be performed upon a partitionless NVMe drive. The instructions feature: 
+ phases are divided into pre and post scripts to allow for pick and choose functionality. 
+## pre-install-script
+Intended to be performed upon a partitionless NVMe drive. The instructions feature: 
 * Encrypted `/` 
 * Encrypted `/boot` (separate partition)
 * Encrypted `/swap`
@@ -15,4 +15,4 @@ archiso media.
 My custom installation. 
 * Installs the `yay` pacman wrapper
 * Installs the packages found in `pkglist.txt` using `yay`
-* Automatic enabling and registering of any packages that are to be used as systemd services.
+* Enabling and registering of any packages that are to be used as systemd services.
