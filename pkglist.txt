@@ -27,6 +27,7 @@ findutils
 firefox
 flameshot
 flex
+freerdp
 fzf
 gawk
 gcc
@@ -60,6 +61,7 @@ neofetch
 neovim
 network-manager-applet
 networkmanager
+networkmanager-l2tp
 nss-mdns
 ntfs-3g
 odrive-bin
