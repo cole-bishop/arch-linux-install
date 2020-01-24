@@ -24,7 +24,23 @@ timedatectl set-timezone America/Chicago
 sudo systemctl enable org.cups.cupsd.service && systemctl start org.cups.cupsd.service # service for discovering printers
 sudo systemctl enable avahi-daemon.service && sudo systemctl start avahi-daemon.service # multicast discovery (needed for cups)
 sudo systemctl enable cups-browsed.service && sudo systemctl start cups-browsed.service # printer manager at http://localhost:631
-sudo systemctl enable docker.service && sudo systemctl start docker.service # docker
+
+# Docker.
+sudo systemctl enable docker.service && sudo systemctl start docker.service
+
+# To be able to run 'fwupdmgr refresh && fwupdmgr update'
+# for firmware updates.
+sudo systemctl enable fwupd.service && sudo systemctl start fwupd.service
+
+# To authorize any USB docks.
+# to authorize the dock, find the the UUID with:
+# boltctl list
+#
+# Then authorize.
+# boltctl authorize <uuid for your device>
+#
+# To persist across restarts.
+# sudo boltctl enroll --policy=auto <uuid for your device> 
 
 # SpaceVim
 curl -sLf https://spacevim.org/install.sh | bash

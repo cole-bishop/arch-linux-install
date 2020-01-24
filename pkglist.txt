@@ -10,6 +10,7 @@ bison
 bitwarden-bin
 blueman
 bluez-utils
+bolt
 brave-bin
 brother-mfc-j985dw
 cbatticon
@@ -28,6 +29,7 @@ firefox
 flameshot
 flex
 freerdp
+fwupd
 fzf
 gawk
 gcc
@@ -113,5 +115,6 @@ xss-lock
 xterm
 yay
 zip
+zoom
 zplug
 zsh
