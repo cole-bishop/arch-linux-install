@@ -67,7 +67,7 @@ mkdir /mnt/home
 mount /dev/mapper/vg0-home /mnt/home
 
 # Install the system. 
-pacstrap /mnt linux linux-firmware base base-devel grub-efi-x86_64 efibootmgr dialog wpa_supplicant lvm2 mkinitcpio cryptsetup zsh vim git
+pacstrap /mnt linux linux-firmware base base-devel grub-efi-x86_64 efibootmgr dialog wpa_supplicant lvm2 mkinitcpio cryptsetup zsh vim git reflector
 
 # Generate fstab from current mounts.
 genfstab -pU /mnt >> /mnt/etc/fstab
@@ -83,7 +83,8 @@ sed -i 's/relatime/noatime/' /mnt/etc/fstab
 # Enter the new system.
 arch-chroot /mnt /bin/bash
 
-# Use all currently available US mirrors for mirrorlist. (may require sudo)
+# Use the 200 most latest updated, and fastest mirrors.
+sudo reflector --country 'United States' --verbose --latest 200 --sort rate --save /etc/pacman.d/mirrorlist
 curl -o /etc/pacman.d/mirrorlist https://www.archlinux.org/mirrorlist/?country=US&protocol=http&protocol=https&ip_version=4&ip_version=6&use_mirror_status=on
 
 # Uncomment servers.
