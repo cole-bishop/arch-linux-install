@@ -13,6 +13,7 @@ blueman
 bluez-utils
 bolt
 brother-mfc-j985dw
+calc
 cbatticon
 cmatrix
 composer
@@ -26,6 +27,7 @@ docker-compose
 dunst
 efibootmgr
 elinks
+evince-light
 fakeroot
 file
 findutils
@@ -52,6 +54,7 @@ htop
 intellij-idea-ultimate-edition
 intellij-idea-ultimate-edition-jre
 jid
+jq
 libreoffice-still
 libtool
 linux
@@ -102,6 +105,7 @@ reflector
 remmina
 rofi
 sed
+skypeforlinux-preview-bin
 slack-desktop
 slock-gruvbox
 speedtest-cli
@@ -118,6 +122,7 @@ traceroute
 tree
 ttf-google-fonts-git
 ttf-ms-fonts
+tumbler
 tuxguitar
 tzupdate
 unzip

@@ -67,7 +67,7 @@ mkdir /mnt/home
 mount /dev/mapper/vg0-home /mnt/home
 
 # Install the system. 
-pacstrap /mnt linux linux-firmware base base-devel grub-efi-x86_64 efibootmgr dialog wpa_supplicant lvm2 mkinitcpio cryptsetup zsh vim git reflector
+pacstrap /mnt linux linux-firmware base base-devel grub-efi-x86_64 efibootmgr dialog wpa_supplicant lvm2 mkinitcpio cryptsetup zsh vim git reflector terminus-font
 
 # Generate fstab from current mounts.
 genfstab -pU /mnt >> /mnt/etc/fstab
@@ -84,8 +84,9 @@ sed -i 's/relatime/noatime/' /mnt/etc/fstab
 arch-chroot /mnt /bin/bash
 
 # Use the 200 most latest updated, and fastest mirrors.
-sudo reflector --country 'United States' --verbose --latest 200 --sort rate --save /etc/pacman.d/mirrorlist
-curl -o /etc/pacman.d/mirrorlist https://www.archlinux.org/mirrorlist/?country=US&protocol=http&protocol=https&ip_version=4&ip_version=6&use_mirror_status=on
+sudo reflector --country 'United States' --verbose --latest 50 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
+# If one doesn't wish to use reflector:
+# curl -o /etc/pacman.d/mirrorlist https://www.archlinux.org/mirrorlist/?country=US&protocol=http&protocol=https&ip_version=4&ip_version=6&use_mirror_status=on
 
 # Uncomment servers.
 sed -i -e 's/#Server/Server/g' /etc/pacman.d/mirrorlist
@@ -208,7 +209,7 @@ grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=ArchL
 echo "cryptboot  /dev/nvme0n1p2      /crypto_keyfile.bin        luks" >> /etc/crypttab
 
 # Persist it as the console font. (do so after full installation)
-# Set 'FONT=sun12x22' in /etc/vconsole.conf
+# Set 'FONT=ter-132n' in /etc/vconsole.conf
 vim /etc/vconsole.conf
 
 # Exit chroot. Return to archiso 'root@archiso ~ # ' prompt.
